@@ -12,29 +12,29 @@ interface GanttChartProps {
 
 // Color palette for processes
 const PROCESS_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  P0: { bg: 'bg-blue-500/25 dark:bg-blue-500/35', border: 'border-blue-500', text: 'text-blue-700 dark:text-blue-300' },
-  P1: { bg: 'bg-emerald-500/25 dark:bg-emerald-500/35', border: 'border-emerald-500', text: 'text-emerald-700 dark:text-emerald-300' },
-  P2: { bg: 'bg-purple-500/25 dark:bg-purple-500/35', border: 'border-purple-500', text: 'text-purple-700 dark:text-purple-300' },
-  P3: { bg: 'bg-amber-500/25 dark:bg-amber-500/35', border: 'border-amber-500', text: 'text-amber-700 dark:text-amber-300' },
-  P4: { bg: 'bg-rose-500/25 dark:bg-rose-500/35', border: 'border-rose-500', text: 'text-rose-700 dark:text-rose-300' },
-  P5: { bg: 'bg-cyan-500/25 dark:bg-cyan-500/35', border: 'border-cyan-500', text: 'text-cyan-700 dark:text-cyan-300' },
-  P6: { bg: 'bg-indigo-500/25 dark:bg-indigo-500/35', border: 'border-indigo-500', text: 'text-indigo-700 dark:text-indigo-300' },
+  P0: { bg: 'bg-blue-500/15 dark:bg-blue-500/20', border: 'border-blue-500/50', text: 'text-blue-700 dark:text-blue-300' },
+  P1: { bg: 'bg-emerald-500/15 dark:bg-emerald-500/20', border: 'border-emerald-500/50', text: 'text-emerald-700 dark:text-emerald-300' },
+  P2: { bg: 'bg-indigo-500/15 dark:bg-indigo-500/20', border: 'border-indigo-500/50', text: 'text-indigo-700 dark:text-indigo-300' },
+  P3: { bg: 'bg-amber-500/15 dark:bg-amber-500/20', border: 'border-amber-500/50', text: 'text-amber-700 dark:text-amber-300' },
+  P4: { bg: 'bg-rose-500/15 dark:bg-rose-500/20', border: 'border-rose-500/50', text: 'text-rose-700 dark:text-rose-300' },
+  P5: { bg: 'bg-teal-500/15 dark:bg-teal-500/20', border: 'border-teal-500/50', text: 'text-teal-700 dark:text-teal-300' },
+  P6: { bg: 'bg-slate-500/15 dark:bg-slate-500/20', border: 'border-slate-500/50', text: 'text-slate-700 dark:text-slate-300' },
 };
 
 export const getColor = (pid: string | null) => {
   if (!pid) {
-    // Idle is explicitly styled green matching slide conventions!
+    // Idle time is shown as a neutral, dimmed block
     return {
-      bg: 'bg-green-500/30 dark:bg-green-500/40',
-      border: 'border-green-600',
-      text: 'text-green-800 dark:text-green-200 font-semibold',
+      bg: 'bg-slate-500/10 dark:bg-slate-500/10',
+      border: 'border-slate-500/40',
+      text: 'text-slate-500 dark:text-slate-400 font-medium',
     };
   }
   return (
     PROCESS_COLORS[pid] || {
-      bg: 'bg-sky-500/25 dark:bg-sky-500/35',
-      border: 'border-sky-500',
-      text: 'text-sky-700 dark:text-sky-300',
+      bg: 'bg-blue-500/15 dark:bg-blue-500/20',
+      border: 'border-blue-500/50',
+      text: 'text-blue-700 dark:text-blue-300',
     }
   );
 };
@@ -185,8 +185,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs">
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-medium text-slate-500 dark:text-slate-400">Legend:</span>
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-green-500/50 bg-green-500/15 text-green-700 dark:text-green-300 font-medium">
-            <span className="h-2 w-2 rounded-full bg-green-500" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-slate-500/30 bg-slate-500/10 text-slate-600 dark:text-slate-400 font-medium">
+            <span className="h-2 w-2 rounded-full bg-slate-400" />
             <span>IDLE (CPU Waiting)</span>
           </div>
           {Array.from(new Set(slices.map((s) => s.pid).filter(Boolean) as string[])).map((pid) => {
@@ -194,7 +194,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             return (
               <div
                 key={pid}
-                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border ${col.border} ${col.bg} ${col.text}`}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border ${col.border} ${col.bg} ${col.text}`}
               >
                 <span className="font-bold">{pid}</span>
               </div>

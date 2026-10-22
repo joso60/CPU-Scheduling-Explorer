@@ -81,8 +81,11 @@ export const ReadyQueueTimeline: React.FC<ReadyQueueTimelineProps> = ({
           </span>
         </div>
 
-        {/* Timeline Slider */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        {/* Timeline Slider & Shortcut Tip */}
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <span className="hidden md:inline text-[11px] text-slate-400">
+            Tip: use &larr; / &rarr; keys to step
+          </span>
           <input
             type="range"
             min={0}
@@ -98,7 +101,7 @@ export const ReadyQueueTimeline: React.FC<ReadyQueueTimelineProps> = ({
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-2">
-            <span className="text-sky-600 dark:text-sky-400 font-bold">Ready Queue (Slide Tape)</span>
+            <span className="text-indigo-600 dark:text-indigo-400 font-bold">Ready Queue (Slide Tape)</span>
             <span className="text-[11px] font-normal normal-case text-slate-400">
               (Cumulative addition &mdash; previous entries are never removed)
             </span>
@@ -110,7 +113,7 @@ export const ReadyQueueTimeline: React.FC<ReadyQueueTimelineProps> = ({
 
         {/* The Slide-Style Continuous Box Strip */}
         <div className="overflow-x-auto pb-2 pt-1">
-          <div className="inline-flex min-w-full items-stretch rounded-xl border-2 border-sky-400/70 dark:border-sky-600/60 bg-sky-50/40 dark:bg-sky-950/20 p-2 shadow-xs">
+          <div className="inline-flex min-w-full items-stretch rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100/70 dark:bg-slate-900/70 p-2 shadow-xs">
             {Array.from({ length: maxSlots }).map((_, slotIdx) => {
               const pid = stepQueue[slotIdx];
               const isFilled = pid !== undefined;
@@ -119,13 +122,13 @@ export const ReadyQueueTimeline: React.FC<ReadyQueueTimelineProps> = ({
               return (
                 <div
                   key={slotIdx}
-                  className={`relative flex items-center justify-center min-w-16 sm:min-w-20 h-14 border-r last:border-r-0 border-sky-300 dark:border-sky-700/80 transition-all duration-200 ${
+                  className={`relative flex items-center justify-center min-w-16 sm:min-w-20 h-14 border-r last:border-r-0 border-slate-300 dark:border-slate-700 transition-all duration-200 ${
                     isFilled
-                      ? 'bg-gradient-to-b from-sky-500 to-sky-600 dark:from-sky-600 dark:to-sky-700 text-white font-black text-lg shadow-inner'
+                      ? 'bg-indigo-500/15 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-black text-lg'
                       : 'bg-transparent border-dashed text-slate-300 dark:text-slate-700'
                   } ${
                     isLatestAdded
-                      ? 'ring-2 ring-indigo-400 dark:ring-indigo-300 z-10 scale-[1.02] brightness-110'
+                      ? 'ring-2 ring-indigo-500 dark:ring-indigo-400 z-10 bg-indigo-500/25 dark:bg-indigo-500/30'
                       : ''
                   }`}
                 >
@@ -133,7 +136,7 @@ export const ReadyQueueTimeline: React.FC<ReadyQueueTimelineProps> = ({
                     <div className="flex flex-col items-center justify-center">
                       <span className="font-mono tracking-tight">{pid}</span>
                       {isLatestAdded && (
-                        <span className="text-[8px] uppercase tracking-wider opacity-90 font-sans font-medium text-sky-100">
+                        <span className="text-[8px] uppercase tracking-wider opacity-90 font-sans font-medium text-indigo-600 dark:text-indigo-300">
                           (Added)
                         </span>
                       )}
@@ -163,7 +166,7 @@ export const ReadyQueueTimeline: React.FC<ReadyQueueTimelineProps> = ({
                 {currentSnapshot.running}
               </span>
             ) : (
-              <span className="text-xs font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-950/60 px-2.5 py-1 rounded-md border border-green-500/30">
+              <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
                 IDLE (Waiting)
               </span>
             )}
@@ -185,7 +188,7 @@ export const ReadyQueueTimeline: React.FC<ReadyQueueTimelineProps> = ({
               currentSnapshot.queue.map((p, i) => (
                 <span
                   key={i}
-                  className="px-2 py-0.5 rounded text-xs font-bold font-mono bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-sky-800"
+                  className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20"
                 >
                   {p}
                 </span>

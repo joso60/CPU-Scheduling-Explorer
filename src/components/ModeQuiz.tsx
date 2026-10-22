@@ -13,7 +13,9 @@ export const ModeQuiz: React.FC = () => {
   const [withArrival, setWithArrival] = useState<boolean>(true);
   const [numProcesses, setNumProcesses] = useState<number>(3);
   const [quantum, setQuantum] = useState<number>(3);
-  const [priorityMode] = useState<PriorityMode>('LOW_IS_HIGH');
+  const [priorityMode, setPriorityMode] = useState<PriorityMode>('LOW_IS_HIGH');
+  const [firstCompletedAns, setFirstCompletedAns] = useState<string>('');
+  const [lastCompletedAns, setLastCompletedAns] = useState<string>('');
 
   // Problem processes
   const [problemProcesses, setProblemProcesses] = useState<Process[]>([
@@ -44,6 +46,26 @@ export const ModeQuiz: React.FC = () => {
     return schedule(problemProcesses, algorithm, { quantum, priorityMode });
   }, [problemProcesses, algorithm, quantum, priorityMode]);
 
+  const { expectedFirstPid, expectedLastPid } = useMemo(() => {
+    const sorted = [...groundTruth.results].sort((a, b) => a.completion - b.completion);
+    return {
+      expectedFirstPid: sorted[0]?.pid ?? '',
+      expectedLastPid: sorted[sorted.length - 1]?.pid ?? '',
+    };
+  }, [groundTruth]);
+
+  const firstPidState: CellState | undefined = useMemo(() => {
+    if (!gradeReport) return undefined;
+    if (!firstCompletedAns.trim()) return 'empty';
+    return firstCompletedAns.trim().toUpperCase() === expectedFirstPid.toUpperCase() ? 'correct' : 'wrong';
+  }, [gradeReport, firstCompletedAns, expectedFirstPid]);
+
+  const lastPidState: CellState | undefined = useMemo(() => {
+    if (!gradeReport) return undefined;
+    if (!lastCompletedAns.trim()) return 'empty';
+    return lastCompletedAns.trim().toUpperCase() === expectedLastPid.toUpperCase() ? 'correct' : 'wrong';
+  }, [gradeReport, lastCompletedAns, expectedLastPid]);
+
   // Generate new random problem
   const handleGenerateNew = (overrideMode?: Algorithm | 'RANDOM') => {
     const mode = overrideMode ?? selectedAlgoMode;
@@ -53,6 +75,8 @@ export const ModeQuiz: React.FC = () => {
     setQuantum(prob.quantum);
     setGradeReport(null);
     setShowSolution(false);
+    setFirstCompletedAns('');
+    setLastCompletedAns('');
 
     // Reset student answers
     setStudentAns({
@@ -77,8 +101,11 @@ export const ModeQuiz: React.FC = () => {
     setAlgorithm(p.algorithm);
     setProblemProcesses(p.processes.map((proc) => ({ ...proc })));
     if (p.quantum) setQuantum(p.quantum);
+    setPriorityMode(p.priorityMode ?? 'LOW_IS_HIGH');
     setGradeReport(null);
     setShowSolution(false);
+    setFirstCompletedAns('');
+    setLastCompletedAns('');
 
     setStudentAns({
       readyQueue: '',
@@ -139,8 +166,8 @@ export const ModeQuiz: React.FC = () => {
 
   const getCellBorder = (st?: CellState) => {
     if (!st || st === 'empty') return 'border-slate-300 dark:border-slate-700';
-    if (st === 'correct') return 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500';
-    return 'border-rose-500 bg-rose-50/40 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 ring-1 ring-rose-500';
+    if (st === 'correct') return 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400';
+    return 'border-rose-500/50 bg-rose-500/10 text-rose-700 dark:text-rose-400';
   };
 
   return (
@@ -251,22 +278,32 @@ export const ModeQuiz: React.FC = () => {
       </div>
 
       {/* Given Problem Question Statement */}
-      <div className="card space-y-3 bg-indigo-50/30 dark:bg-indigo-950/15 border-indigo-200 dark:border-indigo-900/60">
+      <div className="card space-y-3 bg-slate-50/70 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase font-extrabold tracking-wider text-indigo-700 dark:text-indigo-400">
+            <span className="text-xs uppercase font-extrabold tracking-wider text-indigo-600 dark:text-indigo-400">
               Current Problem: {ALGORITHM_LABELS[algorithm]}
             </span>
             {selectedAlgoMode === 'RANDOM' && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 animate-in fade-in">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
                 <Dices className="h-3 w-3" />
                 Randomly Selected Algorithm
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
+            {usesPriority(algorithm) && (
+              <select
+                value={priorityMode}
+                onChange={(e) => setPriorityMode(e.target.value as PriorityMode)}
+                className="input text-xs py-1 px-2.5 w-auto font-semibold"
+              >
+                <option value="LOW_IS_HIGH">Priority: Lowest # = Highest Priority</option>
+                <option value="HIGH_IS_HIGH">Priority: Largest # = Highest Priority</option>
+              </select>
+            )}
             {algorithm === 'RR' && (
-              <span className="text-xs font-mono font-bold bg-indigo-100 dark:bg-indigo-900/60 px-2 py-0.5 rounded text-indigo-800 dark:text-indigo-200">
+              <span className="text-xs font-mono font-bold bg-indigo-500/10 px-2.5 py-0.5 rounded-full text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
                 Time Quantum q = {quantum}
               </span>
             )}
@@ -285,14 +322,14 @@ export const ModeQuiz: React.FC = () => {
         </div>
 
         {/* Display given process table */}
-        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100 dark:bg-slate-800 font-semibold text-slate-600 dark:text-slate-300">
+            <thead className="bg-slate-100 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 font-semibold text-slate-600 dark:text-slate-300">
               <tr>
                 <th className="px-3 py-2">Process</th>
                 <th className="px-3 py-2">Arrival Time (A.T)</th>
+                <th className="px-3 py-2">Priority (P)</th>
                 <th className="px-3 py-2">Burst Time (B.T)</th>
-                {usesPriority(algorithm) && <th className="px-3 py-2">Priority (P)</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -300,8 +337,8 @@ export const ModeQuiz: React.FC = () => {
                 <tr key={p.pid} className="font-mono">
                   <td className="px-3 py-1.5 font-bold text-slate-800 dark:text-slate-100">{p.pid}</td>
                   <td className="px-3 py-1.5">{p.arrival}</td>
+                  <td className="px-3 py-1.5 text-slate-500">{p.priority}</td>
                   <td className="px-3 py-1.5 font-semibold text-indigo-600 dark:text-indigo-400">{p.burst}</td>
-                  {usesPriority(algorithm) && <td className="px-3 py-1.5">{p.priority}</td>}
                 </tr>
               ))}
             </tbody>
@@ -327,8 +364,8 @@ export const ModeQuiz: React.FC = () => {
             className={`input font-mono ${
               gradeReport
                 ? gradeReport.readyQueueOk
-                  ? 'border-emerald-500 bg-emerald-50/30'
-                  : 'border-rose-500 bg-rose-50/30'
+                  ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                  : 'border-rose-500/50 bg-rose-500/10 text-rose-700 dark:text-rose-400'
                 : ''
             }`}
           />
@@ -393,19 +430,25 @@ export const ModeQuiz: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. Table blanks: C.T, T.A.T, W.T */}
+        {/* 3. Table blanks: C.T, W.T, T.A.T */}
         <div className="space-y-2">
-          <label className="label">3. Fill Process Results Table</label>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label className="label mb-0">3. Fill Process Results Table (C.T, W.T, T.A.T)</label>
+            <span className="text-[11px] font-mono text-slate-400">
+              Formulas: T.A.T = C.T − A.T &nbsp;|&nbsp; W.T = T.A.T − B.T
+            </span>
+          </div>
           <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-100 dark:bg-slate-800 font-semibold text-slate-600 dark:text-slate-300">
                 <tr>
                   <th className="px-3 py-2">Process</th>
                   <th className="px-3 py-2">A.T</th>
+                  <th className="px-3 py-2">Priority</th>
                   <th className="px-3 py-2">B.T</th>
                   <th className="px-3 py-2">Completion Time (C.T)</th>
-                  <th className="px-3 py-2">Turnaround (T.A.T)</th>
                   <th className="px-3 py-2">Waiting Time (W.T)</th>
+                  <th className="px-3 py-2">Turnaround (T.A.T)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -417,6 +460,7 @@ export const ModeQuiz: React.FC = () => {
                     <tr key={p.pid} className="font-mono">
                       <td className="px-3 py-2 font-bold">{p.pid}</td>
                       <td className="px-3 py-2 text-slate-500">{p.arrival}</td>
+                      <td className="px-3 py-2 text-slate-500">{p.priority}</td>
                       <td className="px-3 py-2 text-slate-500">{p.burst}</td>
                       <td className="px-3 py-2">
                         <input
@@ -430,19 +474,19 @@ export const ModeQuiz: React.FC = () => {
                       <td className="px-3 py-2">
                         <input
                           type="number"
-                          placeholder="T.A.T"
-                          value={vals.tat}
-                          onChange={(e) => handleTableChange(p.pid, 'tat', e.target.value)}
-                          className={`input w-24 text-center text-xs ${getCellBorder(state?.tat)}`}
+                          placeholder="W.T"
+                          value={vals.wt}
+                          onChange={(e) => handleTableChange(p.pid, 'wt', e.target.value)}
+                          className={`input w-24 text-center text-xs ${getCellBorder(state?.wt)}`}
                         />
                       </td>
                       <td className="px-3 py-2">
                         <input
                           type="number"
-                          placeholder="W.T"
-                          value={vals.wt}
-                          onChange={(e) => handleTableChange(p.pid, 'wt', e.target.value)}
-                          className={`input w-24 text-center text-xs ${getCellBorder(state?.wt)}`}
+                          placeholder="T.A.T"
+                          value={vals.tat}
+                          onChange={(e) => handleTableChange(p.pid, 'tat', e.target.value)}
+                          className={`input w-24 text-center text-xs ${getCellBorder(state?.tat)}`}
                         />
                       </td>
                     </tr>
@@ -453,13 +497,39 @@ export const ModeQuiz: React.FC = () => {
           </div>
         </div>
 
-        {/* 4. Statistics Blanks */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* 4. Statistics & Completion Order Blanks */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="space-y-1">
+            <label className="label">First Process to Complete</label>
+            <input
+              type="text"
+              placeholder="e.g. A0 or P1"
+              value={firstCompletedAns}
+              onChange={(e) => setFirstCompletedAns(e.target.value)}
+              className={`input font-mono text-xs ${getCellBorder(firstPidState)}`}
+            />
+            {gradeReport && firstPidState === 'wrong' && (
+              <p className="text-[11px] font-mono text-rose-500">Expected: {expectedFirstPid}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <label className="label">Last Process to Complete</label>
+            <input
+              type="text"
+              placeholder="e.g. A1 or P3"
+              value={lastCompletedAns}
+              onChange={(e) => setLastCompletedAns(e.target.value)}
+              className={`input font-mono text-xs ${getCellBorder(lastPidState)}`}
+            />
+            {gradeReport && lastPidState === 'wrong' && (
+              <p className="text-[11px] font-mono text-rose-500">Expected: {expectedLastPid}</p>
+            )}
+          </div>
           <div className="space-y-1">
             <label className="label">Avg. Turnaround Time</label>
             <input
               type="text"
-              placeholder="e.g. 13 or 15.6"
+              placeholder="e.g. 16 or 15.6"
               value={studentAns.avgTAT}
               onChange={(e) => setStudentAns({ ...studentAns, avgTAT: e.target.value })}
               className={`input font-mono text-xs ${getCellBorder(gradeReport?.statsState.avgTAT)}`}
@@ -469,17 +539,17 @@ export const ModeQuiz: React.FC = () => {
             <label className="label">Avg. Waiting Time</label>
             <input
               type="text"
-              placeholder="e.g. 3 or 5.6"
+              placeholder="e.g. 9.4 or 5.6"
               value={studentAns.avgWT}
               onChange={(e) => setStudentAns({ ...studentAns, avgWT: e.target.value })}
               className={`input font-mono text-xs ${getCellBorder(gradeReport?.statsState.avgWT)}`}
             />
           </div>
           <div className="space-y-1">
-            <label className="label">Throughput (e.g. 0.10)</label>
+            <label className="label">Throughput (e.g. 0.15)</label>
             <input
               type="text"
-              placeholder="e.g. 0.10 or 0.19"
+              placeholder="e.g. 0.15 or 0.19"
               value={studentAns.throughput}
               onChange={(e) => setStudentAns({ ...studentAns, throughput: e.target.value })}
               className={`input font-mono text-xs ${getCellBorder(gradeReport?.statsState.throughput)}`}
@@ -517,7 +587,7 @@ export const ModeQuiz: React.FC = () => {
 
       {/* Grade Report & Diagnostic Explanations */}
       {gradeReport && (
-        <div className="card space-y-4 animate-in fade-in duration-200 border-2 border-indigo-200 dark:border-indigo-900">
+        <div className="card space-y-4 animate-in fade-in duration-200 border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Award className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
@@ -526,12 +596,12 @@ export const ModeQuiz: React.FC = () => {
               </h3>
             </div>
             <span
-              className={`px-3 py-1 rounded-full text-xs font-bold ${
+              className={`px-3 py-1 rounded-full text-xs font-bold border ${
                 gradeReport.percent >= 85
-                  ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
                   : gradeReport.percent >= 60
-                  ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
-                  : 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300'
+                  ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/20'
+                  : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20'
               }`}
             >
               {gradeReport.percent >= 85 ? 'Excellent Work!' : gradeReport.percent >= 60 ? 'Good Effort — Review Mistakes' : 'Needs Practice'}
@@ -541,7 +611,7 @@ export const ModeQuiz: React.FC = () => {
           {/* Section Score Breakdown */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             {gradeReport.sections.map((sec) => (
-              <div key={sec.label} className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 text-xs">
+              <div key={sec.label} className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-xs">
                 <span className="text-slate-500 dark:text-slate-400">{sec.label}</span>
                 <p className="text-sm font-bold mt-1 text-slate-800 dark:text-slate-100">
                   {sec.earned.toFixed(1)} / {sec.max}
@@ -556,10 +626,10 @@ export const ModeQuiz: React.FC = () => {
               <span className="text-xs uppercase font-bold tracking-wider text-slate-500">
                 Detailed Feedback & Corrections
               </span>
-              <div className="space-y-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-3.5">
+              <div className="space-y-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3.5">
                 {gradeReport.diagnostics.map((diag, i) => (
                   <p key={i} className="text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2">
-                    <span className="text-indigo-600 font-bold">&bull;</span>
+                    <span className="text-indigo-500 font-bold">&bull;</span>
                     <span>{diag}</span>
                   </p>
                 ))}
@@ -571,8 +641,8 @@ export const ModeQuiz: React.FC = () => {
 
       {/* Solution Reveal View */}
       {showSolution && groundTruth && (
-        <div className="card space-y-4 animate-in fade-in duration-200 bg-indigo-50/20 dark:bg-indigo-950/20 border-indigo-300 dark:border-indigo-800">
-          <div className="flex items-center gap-2 border-b border-indigo-100 dark:border-indigo-900 pb-2">
+        <div className="card space-y-4 animate-in fade-in duration-200 bg-slate-50/70 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-2">
             <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             <h4 className="font-bold text-slate-800 dark:text-white text-sm">
               Ground Truth Correct Solution
@@ -581,9 +651,9 @@ export const ModeQuiz: React.FC = () => {
 
           <div className="space-y-2">
             <span className="text-xs font-semibold text-slate-500">Expected Ready Queue Order:</span>
-            <div className="flex flex-wrap gap-1 font-mono text-xs">
+            <div className="flex flex-wrap gap-1.5 font-mono text-xs">
               {groundTruth.readyQueueSequence.map((q, i) => (
-                <span key={i} className="px-2 py-0.5 rounded bg-sky-600 text-white font-bold">
+                <span key={i} className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 font-bold">
                   {q}
                 </span>
               ))}
@@ -601,21 +671,44 @@ export const ModeQuiz: React.FC = () => {
                 <tr>
                   <th className="px-3 py-1.5">Process</th>
                   <th className="px-3 py-1.5">C.T</th>
-                  <th className="px-3 py-1.5">T.A.T</th>
                   <th className="px-3 py-1.5">W.T</th>
+                  <th className="px-3 py-1.5">T.A.T</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
                 {groundTruth.results.map((r) => (
                   <tr key={r.pid}>
                     <td className="px-3 py-1.5 font-bold">{r.pid}</td>
-                    <td className="px-3 py-1.5 font-bold text-indigo-600">{r.completion}</td>
-                    <td className="px-3 py-1.5">{r.turnaround}</td>
+                    <td className="px-3 py-1.5 font-bold text-indigo-600 dark:text-indigo-400">{r.completion}</td>
                     <td className="px-3 py-1.5">{r.waiting}</td>
+                    <td className="px-3 py-1.5">{r.turnaround}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono pt-1">
+            <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 block font-sans">First Completed</span>
+              <strong className="text-emerald-600 dark:text-emerald-400">{expectedFirstPid}</strong>
+            </div>
+            <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 block font-sans">Last Completed</span>
+              <strong className="text-indigo-600 dark:text-indigo-400">{expectedLastPid}</strong>
+            </div>
+            <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 block font-sans">Avg. T.A.T</span>
+              <strong>{groundTruth.avgTAT.toFixed(2)}</strong>
+            </div>
+            <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 block font-sans">Avg. W.T</span>
+              <strong>{groundTruth.avgWT.toFixed(2)}</strong>
+            </div>
+            <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 block font-sans">Throughput</span>
+              <strong>{groundTruth.throughput.toFixed(3)}</strong>
+            </div>
           </div>
         </div>
       )}
