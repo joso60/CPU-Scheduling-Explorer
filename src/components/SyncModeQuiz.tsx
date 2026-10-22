@@ -39,7 +39,6 @@ type SourceMode = 'random' | 'topic' | 'preset';
 interface CodeModBlank {
   id: string;
   label: string;
-  placeholder: string;
   acceptedNormalized: string[];
   displayAnswer: string;
   explanation: string;
@@ -92,7 +91,6 @@ while (true) {
       {
         id: 'c1',
         label: 'Consumer Line C1 (Empty-buffer check in Unbounded Buffer)',
-        placeholder: 'e.g. while (in == out);',
         acceptedNormalized: ['while(in==out)', 'while(out==in)'],
         displayAnswer: 'while (in == out);',
         explanation: 'Even with an infinite buffer, the Consumer CANNOT read from an empty buffer, so while (in == out); must remain unchanged.',
@@ -100,7 +98,6 @@ while (true) {
       {
         id: 'c3',
         label: 'Consumer Line C3 (Advance out index without wrap-around)',
-        placeholder: 'e.g. out = out + 1;',
         acceptedNormalized: ['out=out+1', 'out++', '++out', 'out+=1'],
         displayAnswer: 'out = out + 1;',
         explanation: 'Because the buffer is unbounded, out advances linearly without % BUFFER_SIZE.',
@@ -108,7 +105,6 @@ while (true) {
       {
         id: 'p1',
         label: 'Producer Line P1 (What replaces the full-buffer while loop? Type NONE if removed)',
-        placeholder: 'Type NONE or // removed',
         acceptedNormalized: ['none', 'removed', '//removed', 'nothing', 'delete', 'remove', ''],
         displayAnswer: 'NONE (Removed — an unbounded buffer is never full)',
         explanation: 'An unbounded buffer never becomes full, so the Producer never busy-waits before inserting an item.',
@@ -116,7 +112,6 @@ while (true) {
       {
         id: 'p3',
         label: 'Producer Line P3 (Advance in index without wrap-around)',
-        placeholder: 'e.g. in = in + 1;',
         acceptedNormalized: ['in=in+1', 'in++', '++in', 'in+=1'],
         displayAnswer: 'in = in + 1;',
         explanation: 'Without a fixed BUFFER_SIZE wrap-around, the Producer increments in linearly: in = in + 1;.',
@@ -155,7 +150,6 @@ do {
       {
         id: 'mutex_val',
         label: '1. Value of mutex immediately after Producer executes wait(mutex)',
-        placeholder: 'e.g. 0',
         acceptedNormalized: ['0'],
         displayAnswer: '0',
         explanation: 'wait(mutex) decrements mutex from 1 to 0, so the Producer now holds the exclusive lock.',
@@ -163,7 +157,6 @@ do {
       {
         id: 'prod_state',
         label: '2. State of Producer when it executes wait(empty) while empty == 0 (BLOCKED or CRITICAL)',
-        placeholder: 'BLOCKED or CRITICAL',
         acceptedNormalized: ['blocked', 'waiting', 'sleep'],
         displayAnswer: 'BLOCKED',
         explanation: 'Because empty == 0, wait(empty) blocks the Producer in empty.queue while it still holds mutex = 0.',
@@ -171,7 +164,6 @@ do {
       {
         id: 'cons_state',
         label: '3. State of Consumer when it executes wait(mutex) to free a slot (BLOCKED or CRITICAL)',
-        placeholder: 'BLOCKED or CRITICAL',
         acceptedNormalized: ['blocked', 'waiting', 'deadlock', 'deadlocked'],
         displayAnswer: 'BLOCKED (Permanent Deadlock)',
         explanation: 'Consumer passes wait(full), but blocks at wait(mutex) because mutex == 0 is held by the sleeping Producer.',
@@ -179,7 +171,6 @@ do {
       {
         id: 'fix_w1',
         label: '4. Correct Producer Entry — 1st wait() statement',
-        placeholder: 'e.g. wait(empty);',
         acceptedNormalized: ['wait(empty)', 'p(empty)'],
         displayAnswer: 'wait(empty);',
         explanation: 'Always wait on the capacity counting semaphore (empty) BEFORE acquiring the binary lock (mutex).',
@@ -187,7 +178,6 @@ do {
       {
         id: 'fix_w2',
         label: '5. Correct Producer Entry — 2nd wait() statement',
-        placeholder: 'e.g. wait(mutex);',
         acceptedNormalized: ['wait(mutex)', 'p(mutex)'],
         displayAnswer: 'wait(mutex);',
         explanation: 'Only acquire mutex after confirming at least one empty slot exists.',
@@ -223,7 +213,6 @@ do {
       {
         id: 'me',
         label: '1. Mutual Exclusion (SATISFIED or VIOLATED)',
-        placeholder: 'SATISFIED or VIOLATED',
         acceptedNormalized: ['satisfied', 'true', 'yes'],
         displayAnswer: 'SATISFIED',
         explanation: 'turn is a single integer (0 or 1); it cannot be both != 0 and != 1 simultaneously, so both processes can never be in CS together.',
@@ -231,7 +220,6 @@ do {
       {
         id: 'prog',
         label: '2. Progress (SATISFIED or VIOLATED)',
-        placeholder: 'SATISFIED or VIOLATED',
         acceptedNormalized: ['violated', 'false', 'no'],
         displayAnswer: 'VIOLATED',
         explanation: 'If turn == 0 and P1 is in its Remainder Section, P0 wants to enter CS but is stuck in while (turn == 0); even though CS is empty.',
@@ -239,7 +227,6 @@ do {
       {
         id: 'bw',
         label: '3. Bounded Waiting (SATISFIED or VIOLATED)',
-        placeholder: 'SATISFIED or VIOLATED',
         acceptedNormalized: ['violated', 'false', 'no'],
         displayAnswer: 'VIOLATED',
         explanation: 'Under the variant where exit sets turn = i (or when one process halts in Remainder), a waiting process can be bypassed or blocked indefinitely.',
@@ -247,7 +234,6 @@ do {
       {
         id: 'case_trace',
         label: '4. Trace Case (P0 then P1, initial turn = 0): Which process enters CS first? (P0 or P1)',
-        placeholder: 'P0 or P1',
         acceptedNormalized: ['p1'],
         displayAnswer: 'P1',
         explanation: 'At turn = 0, P0 evaluates while (turn == 0) -> TRUE and spins. P1 evaluates while (turn == 1) -> FALSE and enters CS!',
@@ -255,7 +241,6 @@ do {
       {
         id: 'fix_entry',
         label: '5. Fix Pi Entry Loop so Pi waits when it is Pj’s turn (turn == j or turn != i)',
-        placeholder: 'e.g. while (turn != i); or while (turn == j);',
         acceptedNormalized: ['while(turn!=i)', 'while(turn==j)'],
         displayAnswer: 'while (turn != i);  /* or while (turn == j); */',
         explanation: 'Pi should spin while (turn != i); (i.e. while it is Pj’s turn) and enter CS when turn == i.',
@@ -290,7 +275,6 @@ while (true) {
       {
         id: 'snip_a_me',
         label: '1. Does Snippet A satisfy Mutual Exclusion? (SATISFIED or VIOLATED)',
-        placeholder: 'SATISFIED or VIOLATED',
         acceptedNormalized: ['violated', 'false', 'no'],
         displayAnswer: 'VIOLATED',
         explanation: 'If P0 and P1 both execute while (flag[(i+1)%2]); while both flags are false, both pass the loop and enter CS simultaneously!',
@@ -298,7 +282,6 @@ while (true) {
       {
         id: 'snip_a_line1',
         label: '2. Fix Snippet A: What statement MUST execute FIRST in the entry section?',
-        placeholder: 'e.g. flag[i] = true;',
         acceptedNormalized: ['flag[i]=true'],
         displayAnswer: 'flag[i] = true;',
         explanation: 'A process must announce its intent (flag[i] = true;) BEFORE reading the other process’s flag.',
@@ -306,7 +289,6 @@ while (true) {
       {
         id: 'snip_b_exit',
         label: '3. Fix Snippet B: Write the correct Exit Section statement to release the TestAndSet lock',
-        placeholder: 'e.g. lock = false;',
         acceptedNormalized: ['lock=false', 'lock=0'],
         displayAnswer: 'lock = false;',
         explanation: 'TestAndSet(&lock) sets lock = true to acquire the CS; the exit section must reset lock = false so waiting processes can enter.',
@@ -314,7 +296,6 @@ while (true) {
       {
         id: 'snip_b_bw',
         label: '4. Even after fixing lock = false, does basic TestAndSet satisfy Bounded Waiting? (SATISFIED or VIOLATED)',
-        placeholder: 'SATISFIED or VIOLATED',
         acceptedNormalized: ['violated', 'false', 'no'],
         displayAnswer: 'VIOLATED',
         explanation: 'Basic TestAndSet without a waiting[] array allows an arbitrary winning process to re-enter CS repeatedly while others starve.',
@@ -353,7 +334,6 @@ semaphore fullBuffer  = [Blank 3];
       {
         id: 'init_mutex',
         label: 'Blank 1: Initial value of mutex',
-        placeholder: 'e.g. 1',
         acceptedNormalized: ['1'],
         displayAnswer: '1',
         explanation: 'mutex is a binary semaphore guarding the buffer and starts unlocked at 1.',
@@ -361,7 +341,6 @@ semaphore fullBuffer  = [Blank 3];
       {
         id: 'init_empty',
         label: 'Blank 2: Initial value of emptyBuffer (10-slot machine starts empty)',
-        placeholder: 'e.g. 10',
         acceptedNormalized: ['10'],
         displayAnswer: '10',
         explanation: 'All 10 slots are initially empty, so emptyBuffer starts at 10.',
@@ -369,7 +348,6 @@ semaphore fullBuffer  = [Blank 3];
       {
         id: 'init_full',
         label: 'Blank 3: Initial value of fullBuffer',
-        placeholder: 'e.g. 0',
         acceptedNormalized: ['0'],
         displayAnswer: '0',
         explanation: 'Initially 0 cokes are in the machine, so fullBuffer starts at 0.',
@@ -377,7 +355,6 @@ semaphore fullBuffer  = [Blank 3];
       {
         id: 'prod_b4',
         label: 'Blank 4: Producer 1st statement before put_1_coke_in_machine()',
-        placeholder: 'e.g. wait(emptyBuffer);',
         acceptedNormalized: ['wait(emptybuffer)', 'wait(empty)'],
         displayAnswer: 'wait(emptyBuffer);',
         explanation: 'Producer must first decrement/wait on emptyBuffer to ensure a free slot exists.',
@@ -385,7 +362,6 @@ semaphore fullBuffer  = [Blank 3];
       {
         id: 'prod_b5',
         label: 'Blank 5: Producer 2nd statement before put_1_coke_in_machine()',
-        placeholder: 'e.g. wait(mutex);',
         acceptedNormalized: ['wait(mutex)'],
         displayAnswer: 'wait(mutex);',
         explanation: 'Producer acquires exclusive access to the machine after reserving an empty slot.',
@@ -393,7 +369,6 @@ semaphore fullBuffer  = [Blank 3];
       {
         id: 'prod_b6',
         label: 'Blank 6: Producer 1st statement after put_1_coke_in_machine()',
-        placeholder: 'e.g. signal(mutex);',
         acceptedNormalized: ['signal(mutex)'],
         displayAnswer: 'signal(mutex);',
         explanation: 'Release mutex immediately after placing the item in the buffer.',
@@ -401,7 +376,6 @@ semaphore fullBuffer  = [Blank 3];
       {
         id: 'prod_b7',
         label: 'Blank 7: Producer 2nd statement after put_1_coke_in_machine()',
-        placeholder: 'e.g. signal(fullBuffer);',
         acceptedNormalized: ['signal(fullbuffer)', 'signal(full)'],
         displayAnswer: 'signal(fullBuffer);',
         explanation: 'Increment fullBuffer to wake up any waiting Consumer.',
@@ -517,19 +491,276 @@ const AlgorithmPanel: React.FC<{
   );
 };
 
+/** Generic, non-leaking placeholder derived from the kind of answer expected. */
+const genericPlaceholder = (b: CodeModBlank): string => {
+  const accepted = b.acceptedNormalized;
+  if (accepted.includes('satisfied')) return 'Enter SATISFIED or VIOLATED';
+  if (accepted.includes('violated')) return 'Enter SATISFIED or VIOLATED';
+  if (accepted.includes('blocked')) return 'Enter BLOCKED or CRITICAL';
+  if (accepted.length === 1 && accepted[0] === 'no') return 'Enter YES or NO';
+  if (accepted.some((a) => /^\d+$/.test(a))) return 'Enter the numeric value...';
+  if (accepted.includes('p1') || accepted.includes('p0')) return 'Enter the process name...';
+  return 'Type the correct code statement here...';
+};
+
+const shuffle = <T,>(arr: T[]): T[] => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+const VV = ['violated', 'false', 'no'];
+
+interface BugTemplate {
+  algo: string;
+  title: string;
+  subtitle: string;
+  code: string;
+  bugLabel: string;
+  verdictLabel: string;
+  verdictAnswers: string[];
+  verdictDisplay: string;
+  verdictExplanation: string;
+  fixLabel: string;
+  fixAnswers: string[];
+  fixDisplay: string;
+  fixExplanation: string;
+  takeaway: string;
+}
+
+const BUG_TEMPLATES: BugTemplate[] = [
+  {
+    algo: "Peterson's Solution",
+    title: "Peterson's Solution — Wrong Flag Order",
+    subtitle: 'boolean flag[2] = {false, false}; int turn;',
+    code: `// Process Pi (j = 1 - i)
+do {
+  while (flag[j] && turn == j) ;   // Entry: test first...
+  flag[i] = true;                  // ...announce intent afterwards
+  turn = j;
+  /* Critical Section */
+  flag[i] = false;
+  /* Remainder Section */
+} while (true);`,
+    bugLabel: 'Wrong flag order',
+    verdictLabel: '1. Does this code satisfy Mutual Exclusion? (SATISFIED or VIOLATED)',
+    verdictAnswers: VV,
+    verdictDisplay: 'VIOLATED',
+    verdictExplanation: 'Both processes can pass the while test while both flags are still false, then both enter the CS.',
+    fixLabel: '2. Which statement must be the FIRST line of the entry section?',
+    fixAnswers: ['flag[i]=true'],
+    fixDisplay: 'flag[i] = true;',
+    fixExplanation: 'A process must announce its intent before it looks at the other process.',
+    takeaway: "In Peterson's algorithm the order is: flag[i] = true; turn = j; while (flag[j] && turn == j);",
+  },
+  {
+    algo: "Peterson's Solution",
+    title: "Peterson's Solution — Wrong Turn Assignment",
+    subtitle: 'boolean flag[2] = {false, false}; int turn;',
+    code: `// Process Pi (j = 1 - i)
+do {
+  flag[i] = true;
+  turn = i;                        // <-- suspicious
+  while (flag[j] && turn == j) ;
+  /* Critical Section */
+  flag[i] = false;
+  /* Remainder Section */
+} while (true);`,
+    bugLabel: 'Wrong turn assignment',
+    verdictLabel: '1. With turn = i, can Pi ever be stopped by the while loop? (Enter YES or NO)',
+    verdictAnswers: ['no'],
+    verdictDisplay: 'NO',
+    verdictExplanation: 'Pi sets turn = i, so turn == j is never true for Pi and it never waits; both processes can enter the CS (Mutual Exclusion VIOLATED).',
+    fixLabel: '2. Rewrite the line that assigns turn so that Pi yields to the other process',
+    fixAnswers: ['turn=j'],
+    fixDisplay: 'turn = j;',
+    fixExplanation: 'Pi must politely give the turn to Pj: turn = j;',
+    takeaway: 'Each process sets turn to the OTHER process, giving it priority.',
+  },
+  {
+    algo: 'TestAndSet Lock',
+    title: 'TestAndSet — Broken Release',
+    subtitle: 'boolean lock = false;',
+    code: `while (true) {
+  while (TestAndSet(&lock)) ;   // entry section
+  /* Critical Section */
+  lock = true;                  // exit section
+  /* Remainder Section */
+}`,
+    bugLabel: 'Wrong exit statement',
+    verdictLabel: '1. After the first process leaves the CS, can any waiting process ever enter? (Enter YES or NO)',
+    verdictAnswers: ['no'],
+    verdictDisplay: 'NO',
+    verdictExplanation: 'The lock stays true forever, so every waiting process spins indefinitely (Progress VIOLATED).',
+    fixLabel: '2. Write the correct exit-section statement',
+    fixAnswers: ['lock=false', 'lock=0'],
+    fixDisplay: 'lock = false;',
+    fixExplanation: 'Releasing the lock requires lock = false;',
+    takeaway: 'TestAndSet acquires by setting lock = true; the exit section must reset it to false.',
+  },
+  {
+    algo: 'Strict Alternation',
+    title: 'Strict Alternation — Wrong Exit Assignment',
+    subtitle: 'int turn = 0;',
+    code: `// Process Pi (j = 1 - i)
+do {
+  while (turn != i) ;     // Entry section
+  /* Critical Section */
+  turn = i;               // Exit section
+  /* Remainder Section */
+} while (true);`,
+    bugLabel: 'Wrong exit assignment',
+    verdictLabel: '1. Does Pj ever get a chance to enter the CS after Pi exits? (Enter YES or NO)',
+    verdictAnswers: ['no'],
+    verdictDisplay: 'NO',
+    verdictExplanation: 'turn stays equal to i, so Pj spins forever while Pi re-enters repeatedly (Bounded Waiting VIOLATED).',
+    fixLabel: '2. Write the correct exit-section statement',
+    fixAnswers: ['turn=j'],
+    fixDisplay: 'turn = j;',
+    fixExplanation: 'The exit section must hand the turn over to the other process: turn = j;',
+    takeaway: 'In Strict Alternation each process hands the turn to the other on exit.',
+  },
+  {
+    algo: 'Producer / Consumer',
+    title: 'Bounded Buffer — Missing signal',
+    subtitle: 'semaphore mutex = 1, empty = N, full = 0;',
+    code: `// PRODUCER
+do {
+  wait(empty);
+  wait(mutex);
+  // add item to buffer
+  signal(mutex);
+  // (missing statement)
+} while (true);
+
+// CONSUMER
+do {
+  wait(full);
+  wait(mutex);
+  // remove item from buffer
+  signal(mutex);
+  signal(empty);
+} while (true);`,
+    bugLabel: 'Missing signal',
+    verdictLabel: '1. What happens to the Consumer after the Producer adds items? (Enter BLOCKED or CRITICAL)',
+    verdictAnswers: ['blocked', 'waiting'],
+    verdictDisplay: 'BLOCKED',
+    verdictExplanation: 'full is never incremented, so wait(full) blocks the Consumer forever even though the buffer holds items.',
+    fixLabel: '2. Write the missing Producer statement',
+    fixAnswers: ['signal(full)'],
+    fixDisplay: 'signal(full);',
+    fixExplanation: 'The Producer must announce a new filled slot with signal(full);',
+    takeaway: 'Every produced item must be announced with signal(full).',
+  },
+  {
+    algo: 'Producer / Consumer',
+    title: 'Bounded Buffer — Reversed Semaphore Order',
+    subtitle: 'semaphore mutex = 1, empty = N, full = 0;',
+    code: `// PRODUCER
+do {
+  wait(mutex);      // <-- acquired first
+  wait(empty);      // <-- may block while holding mutex
+  // add item to buffer
+  signal(mutex);
+  signal(full);
+} while (true);`,
+    bugLabel: 'Reversed semaphore order',
+    verdictLabel: '2. When the buffer is full, can the Consumer ever make progress? (Enter YES or NO)',
+    verdictAnswers: ['no'],
+    verdictDisplay: 'NO (Deadlock)',
+    verdictExplanation: 'The Producer sleeps in wait(empty) holding mutex = 0, so the Consumer blocks on wait(mutex): deadlock.',
+    fixLabel: '1. Write the statement that must come FIRST in the Producer',
+    fixAnswers: ['wait(empty)'],
+    fixDisplay: 'wait(empty);',
+    fixExplanation: 'Always wait on the counting semaphore before the mutex.',
+    takeaway: 'Wait on the resource-count semaphore first, then on the mutex.',
+  },
+  {
+    algo: 'Producer / Consumer',
+    title: 'Bounded Buffer — Missing signal(mutex)',
+    subtitle: 'semaphore mutex = 1, empty = N, full = 0;',
+    code: `// CONSUMER
+do {
+  wait(full);
+  wait(mutex);
+  // remove item from buffer
+  // (missing statement)
+  signal(empty);
+} while (true);`,
+    bugLabel: 'Missing signal(mutex)',
+    verdictLabel: '1. After the Consumer finishes once, can the Producer ever enter its CS? (Enter YES or NO)',
+    verdictAnswers: ['no'],
+    verdictDisplay: 'NO',
+    verdictExplanation: 'mutex remains 0 forever, so every other process blocks on wait(mutex).',
+    fixLabel: '2. Write the missing Consumer statement',
+    fixAnswers: ['signal(mutex)'],
+    fixDisplay: 'signal(mutex);',
+    fixExplanation: 'The lock must be released after leaving the CS.',
+    takeaway: 'Every wait(mutex) must be paired with a signal(mutex).',
+  },
+];
+
+/** Randomly picks a synchronization algorithm and injects one of its known bugs. */
+const generateRandomBugChallenge = (): CodeModChallenge => {
+  const algo = pick(Array.from(new Set(BUG_TEMPLATES.map((t) => t.algo))));
+  const t = pick(BUG_TEMPLATES.filter((x) => x.algo === algo));
+  const verdictFirst = t.verdictLabel.startsWith('1.');
+  const verdictBlank: CodeModBlank = {
+    id: 'rb_verdict',
+    label: t.verdictLabel,
+    acceptedNormalized: t.verdictAnswers,
+    displayAnswer: t.verdictDisplay,
+    explanation: t.verdictExplanation,
+  };
+  const fixBlank: CodeModBlank = {
+    id: 'rb_fix',
+    label: t.fixLabel,
+    acceptedNormalized: t.fixAnswers,
+    displayAnswer: t.fixDisplay,
+    explanation: t.fixExplanation,
+  };
+  return {
+    id: `random_bug_${t.title}`,
+    title: `Random Bug Generation — ${t.title}`,
+    tag: 'Random Bug',
+    prompt: `The ${t.algo} implementation on the left contains an injected bug (${t.bugLabel}). Diagnose the behavior and fix it.`,
+    givenCodeTitle: `Given: ${t.title}`,
+    givenCodeSubtitle: t.subtitle,
+    givenCode: t.code,
+    blanks: verdictFirst ? [verdictBlank, fixBlank] : [fixBlank, verdictBlank],
+    takeaway: t.takeaway,
+  };
+};
+
+const stripNumber = (s: string): string => s.replace(/^\d+\.\s*/, '');
+
 const CodeModWorkbench: React.FC = () => {
+  const [shuffled, setShuffled] = useState<CodeModChallenge[]>(() => shuffle(CODE_MOD_CHALLENGES));
+  const [randomBug, setRandomBug] = useState<CodeModChallenge>(() => generateRandomBugChallenge());
   const [challengeIdx, setChallengeIdx] = useState<number>(0);
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [graded, setGraded] = useState<boolean>(false);
   const [revealed, setRevealed] = useState<boolean>(false);
 
-  const challenge = CODE_MOD_CHALLENGES[challengeIdx];
+  const allChallenges = useMemo(() => [...shuffled, randomBug], [shuffled, randomBug]);
+  const challenge = allChallenges[challengeIdx];
 
   const selectChallenge = (idx: number) => {
     setChallengeIdx(idx);
     setInputs({});
     setGraded(false);
     setRevealed(false);
+  };
+
+  const newQuestion = () => {
+    setShuffled(shuffle(CODE_MOD_CHALLENGES));
+    setRandomBug(generateRandomBugChallenge());
+    selectChallenge(0);
   };
 
   const results = useMemo(() => {
@@ -566,12 +797,20 @@ const CodeModWorkbench: React.FC = () => {
           <span className="text-xs uppercase font-semibold tracking-wider text-slate-500 dark:text-slate-400">
             Written Exam Code Modification & Bug-Fix Challenges (Zero MCQs)
           </span>
-          <span className="text-xs font-mono text-indigo-600 dark:text-indigo-400">
-            Challenge {challengeIdx + 1} of {CODE_MOD_CHALLENGES.length}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-mono text-indigo-600 dark:text-indigo-400">
+              Challenge {challengeIdx + 1} of {allChallenges.length}
+            </span>
+            <button
+              onClick={newQuestion}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+            >
+              <Shuffle className="h-3.5 w-3.5" /> New Question
+            </button>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {CODE_MOD_CHALLENGES.map((c, idx) => (
+          {allChallenges.map((c, idx) => (
             <button
               key={c.id}
               onClick={() => selectChallenge(idx)}
@@ -581,7 +820,7 @@ const CodeModWorkbench: React.FC = () => {
                   : 'text-slate-600 dark:text-slate-400 bg-transparent border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/60'
               }`}
             >
-              {c.title}
+              {idx + 1}. {stripNumber(c.title)}
             </button>
           ))}
         </div>
@@ -611,7 +850,7 @@ const CodeModWorkbench: React.FC = () => {
         <div className="lg:col-span-3 space-y-5">
           {/* Prompt card */}
           <div className="card border-l-4 border-l-indigo-500 space-y-2">
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{challenge.title}</h3>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{challengeIdx + 1}. {stripNumber(challenge.title)}</h3>
             <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{challenge.prompt}</p>
           </div>
 
@@ -671,7 +910,7 @@ const CodeModWorkbench: React.FC = () => {
                         disabled={graded}
                         value={inputs[b.id] ?? ''}
                         onChange={(e) => setInputs((prev) => ({ ...prev, [b.id]: e.target.value }))}
-                        placeholder={b.placeholder}
+                        placeholder={genericPlaceholder(b)}
                         className={`${fieldClass} ${cellBorder(st)}`}
                       />
                       <CellIcon state={st} />
